@@ -1,52 +1,40 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
+import { useDispatch } from 'react-redux';
+import { addContact } from 'Redux/phonebook/phonebookSlice';
 import css from '../ContactForm/Forma.module.css';
 
-export const Forma = ({ contacts, addContact }) => {
+export const Forma = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [id, setId] = useState('');
+  const dispatch = useDispatch();
 
-  const onInputChange = e => {
-    let { name, value } = e.currentTarget;
-    setIsDisabled(isDisabled);
-    switch (name) {
+  const handleChange = e => {
+    const nameEvent = e.target.name;
+
+    switch (nameEvent) {
       case 'name':
-        setName(value);
+        setName(e.target.value);
         break;
       case 'number':
-        setNumber(value);
+        setNumber(e.target.value);
         break;
       default:
-        break;
+        return;
     }
-
-    let finder = contacts.find(
-      contact =>
-        contact.toLowerCase() === value.toLowerCase() ||
-        contact.number === value
-    );
-    if (finder) {
-      setIsDisabled(true);
-      alert(`${value} is already in contacts.`);
-      setName('');
-    }
+    setId(nanoid());
   };
 
   const resetForm = () => {
     setName('');
     setNumber('');
+    setId('');
   };
 
   const handleSubmit = e => {
     e.preventDefault();
-    const contact = {
-      id: nanoid(),
-      name: name,
-      number: number,
-    };
-
-    addContact(contact);
+    dispatch(addContact({ id, name, number }));
     resetForm();
   };
 
@@ -62,7 +50,7 @@ export const Forma = ({ contacts, addContact }) => {
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
           value={name}
-          onChange={e => onInputChange(e)}
+          onChange={handleChange}
         />
       </label>
       <label className={css.form__lable}>
@@ -75,10 +63,10 @@ export const Forma = ({ contacts, addContact }) => {
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
           required
           value={number}
-          onChange={e => onInputChange(e)}
+          onChange={handleChange}
         />
       </label>
-      <button className={css.button__add} type="submit" disabled={isDisabled}>
+      <button className={css.button__add} type="submit">
         add contact
       </button>
     </form>

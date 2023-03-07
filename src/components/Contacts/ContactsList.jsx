@@ -1,31 +1,43 @@
-import PropTypes from 'prop-types';
 import css from '../Contacts/ContactsList.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  removeContact,
+  getStoreContacts,
+  getStoreFilter,
+} from 'Redux/phonebook/phonebookSlice';
 
-export const ContactsList = ({ contacts, filter, filtered, deleteItem }) => {
-  let rendered = filter === '' ? contacts : filtered();
+export const ContactsList = () => {
+  const dispatch = useDispatch();
+  const contactGallery = useSelector(getStoreContacts);
+  const filter = useSelector(getStoreFilter);
+
+  const henandleDelete = id => {
+    dispatch(removeContact(id));
+  };
+
+  let rendered = [];
+  const normalizedFilter = filter.toLowerCase().trim();
+  const filterContacts = contactGallery.filter(cont =>
+    cont.name.toLowerCase().includes(normalizedFilter)
+  );
+
+  filter.length === 0
+    ? (rendered = contactGallery)
+    : (rendered = filterContacts);
   return (
     <ul className={css.list}>
-      {rendered.map(({ name, id, number }) => (
-        <li className={css.item} key={id} id={id}>
-          <span>{name}: </span>
-          <span>{number}</span>
-          <button className={css.button__del} onClick={e => deleteItem(e)}>
+      {rendered.map(cont => (
+        <li className={css.item}>
+          <span>{cont.name}: </span>
+          <span>{cont.number}</span>
+          <button
+            className={css.button__del}
+            onClick={e => henandleDelete(cont.id)}
+          >
             delete
           </button>
         </li>
       ))}
     </ul>
   );
-};
-
-ContactsList.propTypes = {
-  filter: PropTypes.string,
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
-    })
-  ),
-  filtered: PropTypes.func,
 };
